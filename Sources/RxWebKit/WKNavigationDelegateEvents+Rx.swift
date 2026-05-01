@@ -257,13 +257,15 @@ extension Selector {
     /// Ambiguous use of 'webView(_:decidePolicyFor:decisionHandler:)'
     /// please see this link for further understanding
     /// https://bugs.swift.org/browse/SR-3062
-#if swift(>=5.7)
-    static let decidePolicyNavigationResponse = #selector(WKNavigationDelegate.webView(_:decidePolicyFor:decisionHandler:) as (WKNavigationDelegate) -> ((WKWebView, WKNavigationResponse, @escaping(WKNavigationResponsePolicy) -> Void) -> Void)?)
-    static let decidePolicyNavigationAction = #selector(WKNavigationDelegate.webView(_:decidePolicyFor:decisionHandler:) as (WKNavigationDelegate) -> ((WKWebView, WKNavigationAction, @escaping (WKNavigationActionPolicy) -> Void) -> Void)?)
-#else
-    static let decidePolicyNavigationResponse = #selector(WKNavigationDelegate.webView(_:decidePolicyFor:decisionHandler:) as ((WKNavigationDelegate) -> (WKWebView, WKNavigationResponse, @escaping(WKNavigationResponsePolicy) -> Void) -> Void)?)
-    static let decidePolicyNavigationAction = #selector(WKNavigationDelegate.webView(_:decidePolicyFor:decisionHandler:) as ((WKNavigationDelegate) -> (WKWebView, WKNavigationAction, @escaping(WKNavigationActionPolicy) -> Void) -> Void)?)
-#endif
+    ///
+    /// iOS 17 SDK adjusted WKNavigationDelegate signatures so the `as` casts that used to
+    /// disambiguate the two `decidePolicyFor:decisionHandler:` overloads no longer match
+    /// ("error: no exact matches in reference to instance method 'webView'").
+    /// We sidestep the Swift type-resolution problem by constructing the Objective-C
+    /// selectors directly from their stable selector strings. These ObjC names have not
+    /// changed across iOS versions and do not need Swift to disambiguate the overload.
+    static let decidePolicyNavigationResponse = Selector(("webView:decidePolicyForNavigationResponse:decisionHandler:"))
+    static let decidePolicyNavigationAction = Selector(("webView:decidePolicyForNavigationAction:decisionHandler:"))
 }
 
 
